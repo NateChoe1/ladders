@@ -329,6 +329,15 @@
           board = oldBoard;
           board = cloneBoard();
           placeStone(...miai[i], attacker);
+
+          /* the first move should be an atari. if one of the liberties is
+             surrounded by a ponnuki then the attempted surrounding move could
+             be self capture instead. */
+          if (board[row][col] !== defender ||
+              getLiberties(row, col).length !== 1) {
+            continue;
+          }
+
           placeStone(...miai[1-i], defender);
           if (board[row][col] === defender &&
               getLiberties(row, col).length > 2) {
