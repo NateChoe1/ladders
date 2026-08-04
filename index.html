@@ -1,16 +1,41 @@
 <!DOCTYPE html>
 <html>
   <body>
-    <canvas id="goban" width=620 height=620></canvas>
+    <div id="playarea">
+      <canvas id="goban" width=620 height=620></canvas>
+      <canvas id="scratchpad" width=620 height=620></canvas>
+    </div>
+    <input type=color id=pen value="#0000ff">
+    <input type=checkbox id=drawtoggle>
+    <label for=drawtoggle>Draw</label><br>
+    <button id="cleardraw">Clear drawing</button>
     <p>Shift+click on a stone in atari to automatically run out the ladder.</p>
     <p>Try <a
       href=?H4sIAPsRcWoAA+2Tuw3AIAxE+0yRCRAFe7i9/SfJB4gOEzBFElHE1YEenD8Q/Br84gbjOxAYBEWetp4ahC63BlPrhPQ9mFoH0gqsTjesW1nVoMUIOMeMcxmICwIPGROQvQyQZutzj25xSoPBZp6XlznC7GWC2WtkMmV7OrPWYMLt19OPHyxDfZs2qD7ilMW8D26LxNjabgYAAA==>John
       Tromp's ladder problem</a>.</p>
   </body>
 
+  <style>
+    #playarea {
+      position: relative;
+      width: 620px;
+      height: 620px;
+    }
+
+    canvas {
+      position: absolute;
+    }
+  </style>
+
   <script>
     const canvas = document.getElementById("goban");
     const ctx = canvas.getContext("2d");
+
+    const scratchpad = document.getElementById("scratchpad");
+    const drawctx = scratchpad.getContext("2d");
+
+    const drawswitch = document.getElementById("drawtoggle");
+    const pencolor = document.getElementById("pen");
 
     var height, width;
 
@@ -357,20 +382,35 @@
       }
     }
 
-    async function main() {
-      var stateRaw;
+    function mouseout() {
+      hoverRow = hoverCol = -1;
+      draw();
+    }
 
-      canvas.addEventListener("mouseout", () => {
+    function mousemove(ev) {
+      if (drawswitch.checked) {
         hoverRow = hoverCol = -1;
-        draw();
-      });
-
-      canvas.addEventListener("mousemove", (ev) => {
+        if (ev.buttons === 0) {
+          return;
+        }
+        const endX = ev.offsetX;
+        const endY = ev.offsetY;
+        const startX = endX - ev.movementX;
+        const startY = endY - ev.movementY;
+        drawctx.strokeStyle = pencolor.value;
+        drawctx.lineWidth = 3;
+        drawctx.beginPath();
+        drawctx.moveTo(startX, startY);
+        drawctx.lineTo(endX, endY);
+        drawctx.stroke();
+      } else {
         setHover(ev.offsetX, ev.offsetY);
         draw();
-      });
+      }
+    }
 
-      canvas.addEventListener("mouseup", (ev) => {
+    function mouseup(ev) {
+      if (!drawswitch.checked) {
         setHover(ev.offsetX, ev.offsetY);
         if (!ev.shiftKey) {
           playStone(hoverRow, hoverCol);
@@ -378,6 +418,23 @@
           runLadder(hoverRow, hoverCol);
         }
         draw();
+      }
+    }
+
+    async function main() {
+      var stateRaw;
+
+      canvas.addEventListener("mouseout", mouseout);
+      scratchpad.addEventListener("mouseout", mouseout);
+
+      canvas.addEventListener("mousemove", mousemove);
+      scratchpad.addEventListener("mousemove", mousemove);
+
+      canvas.addEventListener("mouseup", mouseup);
+      scratchpad.addEventListener("mouseup", mouseup);
+
+      document.getElementById("cleardraw").addEventListener("click", () => {
+        drawctx.clearRect(0, 0, scratchpad.width, scratchpad.height);
       });
 
       window.addEventListener("keydown", (ev) => {
