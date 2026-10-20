@@ -10,6 +10,13 @@
     <label for=drawtoggle>Draw</label><br>
     <button id="cleardraw">Clear drawing</button>
     <p>Shift+click on a stone in atari to automatically run out the ladder.</p>
+    <p>Try these gadgets:</p>
+    <ul>
+      <li><a href=?H4sIAAg+12oAAzO0VDC05NLDBNQQi4jAFPP3p64dqGIR/ljUITuDRvZSIAYAesMHOYIBAAA=>Mirror</a></li>
+      <li><a href=?H4sIAJhA12oAAzO0VDC05NLDBENGLAKLmL9/BIYY9eyN8MeiLiICU4wo8wApz7msggEAAA==>Black choice</a></li>
+      <li><a href=?H4sIAOM+12oAAzO0VDC05NLDBINRzB9TLIJYvRH+ERhiWMwjxi0R/ljURURgihFlHgCTtN8xggEAAA==>White choice</a></li>
+      <li><a href=?H4sIAHlB12oAAzO0VDC05NLDBCSLRURgivn7k28eqhiS6RA2l16Ev78/TNQfbBOGugiK7YUZjymGzb/k2AEAqe+nQ4IBAAA=>Join</a></li>
+    </ul>
     <p>Try <a
       href=?H4sIAPsRcWoAA+2Tuw3AIAxE+0yRCRAFe7i9/SfJB4gOEzBFElHE1YEenD8Q/Br84gbjOxAYBEWetp4ahC63BlPrhPQ9mFoH0gqsTjesW1nVoMUIOMeMcxmICwIPGROQvQyQZutzj25xSoPBZp6XlznC7GWC2WtkMmV7OrPWYMLt19OPHyxDfZs2qD7ilMW8D26LxNjabgYAAA==>
       Crasmaru and Tromp's ladder problem</a>. (from <a
@@ -431,6 +438,16 @@
 
     async function main() {
       var stateRaw;
+
+      /* ignore left/right arrow keys, pageup, pagedown */
+      document.addEventListener("keydown", function (e) {
+        var key = e.which;
+        if ([37, 39, 33, 34].includes(e.which)) {
+          e.preventDefault();
+          return false;
+        }
+        return true;
+      });
 
       canvas.addEventListener("mouseout", mouseout);
       scratchpad.addEventListener("mouseout", mouseout);
