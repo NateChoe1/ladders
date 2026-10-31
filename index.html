@@ -8,6 +8,8 @@
     <input type=color id=pen value="#0000ff">
     <input type=checkbox id=drawtoggle>
     <label for=drawtoggle>Draw</label><br>
+    <input type=checkbox id=gridtoggle checked>
+    <label for=gridtoggle>Toggle grid</label><br>
     <button id="cleardraw">Clear drawing</button>
     <p>Shift+click on a stone in atari to automatically run out the ladder.</p>
     <p>Try these gadgets:</p>
@@ -51,6 +53,8 @@
 
     const drawswitch = document.getElementById("drawtoggle");
     const pencolor = document.getElementById("pen");
+
+    const gridswitch = document.getElementById("gridtoggle");
 
     var height, width;
 
@@ -243,18 +247,20 @@
       const unitLength = getUnitLength(canvasWidth, canvasHeight);
 
       /* draw grid */
-      ctx.beginPath();
-      for (var i = 0; i < width; ++i) {
-        var x = (unitLength*i) + (unitLength/2);
-        ctx.moveTo(x, unitLength/2);
-        ctx.lineTo(x, unitLength*height - unitLength/2);
+      if (gridswitch.checked) {
+        ctx.beginPath();
+        for (var i = 0; i < width; ++i) {
+          var x = (unitLength*i) + (unitLength/2);
+          ctx.moveTo(x, unitLength/2);
+          ctx.lineTo(x, unitLength*height - unitLength/2);
+        }
+        for (var i = 0; i < height; ++i) {
+          var y = (unitLength*i) + (unitLength/2);
+          ctx.moveTo(unitLength/2, y);
+          ctx.lineTo(unitLength*width - unitLength/2, y);
+        }
+        ctx.stroke();
       }
-      for (var i = 0; i < height; ++i) {
-        var y = (unitLength*i) + (unitLength/2);
-        ctx.moveTo(unitLength/2, y);
-        ctx.lineTo(unitLength*width - unitLength/2, y);
-      }
-      ctx.stroke();
 
       for (var i = 0; i < height; ++i) {
         for (var j = 0; j < width; ++j) {
@@ -457,6 +463,8 @@
 
       canvas.addEventListener("mouseup", mouseup);
       scratchpad.addEventListener("mouseup", mouseup);
+
+      gridswitch.addEventListener("click", draw);
 
       document.getElementById("cleardraw").addEventListener("click", () => {
         drawctx.clearRect(0, 0, scratchpad.width, scratchpad.height);
