@@ -12,6 +12,7 @@
     <label for=gridtoggle>Toggle grid</label><br>
     <button id="cleardraw">Clear drawing</button>
     <p>Shift+click on a stone in atari to automatically run out the ladder.</p>
+    <p><a href=?>Clear board</a></p>
     <p>Try these gadgets:</p>
     <ul>
       <li><a href=?H4sIAAg+12oAAzO0VDC05NLDBNQQi4jAFPP3p64dqGIR/ljUITuDRvZSIAYAesMHOYIBAAA=>Mirror</a></li>
@@ -61,6 +62,9 @@
     var sequence = [];
     var board;
     var moveNum;
+
+    var drawStrokes = [];
+    var strokeStale = true;
 
     const EMPTY = 0;
     const BLACK = 1;
@@ -408,22 +412,49 @@
       draw();
     }
 
+    function drawStroke(params) {
+      drawctx.strokeStyle = params.color;
+      drawctx.lineWidth = params.weight;
+      drawctx.beginPath();
+      drawctx.moveTo.apply(drawctx, params.start);
+      drawctx.lineTo.apply(drawctx, params.end);
+      drawctx.stroke();
+    }
+
+    function undoStroke() {
+      drawStrokes.pop();
+      drawctx.clearRect(0, 0, scratchpad.width, scratchpad.height);
+
+      for (var movement of drawStrokes) {
+        for (var stroke of movement) {
+          drawStroke(stroke);
+        }
+      }
+    }
+
     function mousemove(ev) {
       if (drawswitch.checked) {
         hoverRow = hoverCol = -1;
         if (ev.buttons === 0) {
           return;
         }
+        if (strokeStale) {
+          strokeStale = false;
+          drawStrokes.push([]);
+        }
+        strokeRecord = drawStrokes[drawStrokes.length - 1];
         const endX = ev.offsetX;
         const endY = ev.offsetY;
         const startX = endX - ev.movementX;
         const startY = endY - ev.movementY;
-        drawctx.strokeStyle = pencolor.value;
-        drawctx.lineWidth = 3;
-        drawctx.beginPath();
-        drawctx.moveTo(startX, startY);
-        drawctx.lineTo(endX, endY);
-        drawctx.stroke();
+        const params = {
+          "start": [startX, startY],
+          "end": [endX, endY],
+          "color": pencolor.value,
+          "weight": 3,
+        };
+        strokeRecord.push(params);
+        drawStroke(params);
       } else {
         setHover(ev.offsetX, ev.offsetY);
         draw();
@@ -431,6 +462,7 @@
     }
 
     function mouseup(ev) {
+      strokeStale = true;
       if (!drawswitch.checked) {
         setHover(ev.offsetX, ev.offsetY);
         if (!ev.shiftKey) {
@@ -468,6 +500,8 @@
 
       document.getElementById("cleardraw").addEventListener("click", () => {
         drawctx.clearRect(0, 0, scratchpad.width, scratchpad.height);
+        drawStrokes = [];
+        strokeStale = true;
       });
 
       window.addEventListener("keydown", (ev) => {
@@ -479,6 +513,8 @@
           skip(-10);
         } else if (ev.keyCode == 34) { /* page down */
           skip(10);
+        } else if (ev.keyCode == 90 && ev.ctrlKey) { /* ctrl+z */
+          undoStroke();
         }
         draw();
       }, true);
